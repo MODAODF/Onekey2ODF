@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="onekey2ODF" script:language="StarBasic">
+    
+Rem ***********************
+Rem ** 從 DOC 另存成 ODF 的延伸檔名
+Rem **
+Rem ** @param fileext str
+Rem ** @return str
+Rem ***********************
+Function newext(fileext)
+    Dim ret
+    ret = &quot;other&quot;
+    
+    Select Case fileext
+        Case &quot;doc&quot;
+            ret = &quot;.odt&quot;
+        Case &quot;docx&quot;
+            ret = &quot;.odt&quot;
+        Case &quot;xls&quot;
+            ret = &quot;.ods&quot;
+        Case &quot;xlsx&quot;
+            ret = &quot;.ods&quot;
+        Case &quot;ppt&quot;
+            ret = &quot;.odp&quot;
+        Case &quot;pptx&quot;
+            ret = &quot;.odp&quot;
+    End Select
+    newext = ret
+    &apos;msgbox(newext)
+End Function
+
+Sub onekey2odf
+	Dim dialogtitle as String
+	dialogtitle = dialogtitle &amp; &quot;一鍵另存ODF檔&quot;
+	Dim oDoc
+	Dim oArgs
+	Dim oDcArgs$ as String
+	Dim i%
+		On Error Resume Next
+			oArgs = ThisComponent.getArgs()
+			for i = 0 to UBound(oArgs)
+				oDocArgs = oDocArgs &amp; &quot;oDcArgs[&quot; &amp; i &amp; &quot;]  &quot;
+				oDocArgs = oDocArgs &amp; oArgs(i).Name &amp; &quot; = &quot;
+				oDocArgs = oDocArgs &amp; oArgs(i).Value
+				oDocArgs = oDocArgs &amp; Chr$(10)
+			next i
+		&apos;msgbox(oDocArgs, 0, &quot;Property Args of ThisCompoment&quot;)
+		
+	Dim oFile as String
+	Dim oFileExt as String
+	Dim oNewFileExt as String
+	
+	oDoc = ThisComponent
+	
+	GlobalScope.BasicLibraries.LoadLibrary(&quot;Tools&quot;)
+	oFile = oArgs(0).Value
+	&apos;oFile = oDoc.getURL()
+	oFileExt = GetFileNameExtension(oFile)
+	&apos;oDisp = &quot;[ Use global library1 ]&quot; &amp; Chr$(10) &amp; oFileExt
+	&apos;msgbox( oDisp, 0, &quot;File Extension&quot;)
+	oNewFileExt = newext(oFileExt)
+	
+	Dim oPathDir as String
+	oURL = ConvertToUrl(oFile)
+	oPathDir = Directorynameoutofpath(oURL, &quot;/&quot;)
+	&apos;oDisp = &quot;[ Use global library2 ]&quot; &amp; Chr$(10) &amp; ConvertFromUrl(oPathDir)
+	&apos;msgbox( oDisp, 0, &quot;Path&quot;)
+	
+	Dim ooURL
+	ooURL = oDoc.getLocation()
+	oTitle = FileNameOutOfPath(ooUrl)
+	&apos;MsgBox(oTitle,0,&quot;File Title ( Used &quot;&quot;BasicLibraries&quot;&quot; )&quot;)
+	
+	Dim parts()
+	parts = split(oTitle,&quot;.&quot;)
+	&apos;msgbox(&quot;parts = &quot; &amp; parts(0),0,&quot;parts(0)&quot;)
+	Dim tFile 
+	tFile = convertToURL(oPathDir &amp; &quot;/&quot; &amp; parts(0) &amp; oNewFileExt)
+	&apos;msgbox(tFile)
+	
+	if (oNewFileExt &lt;&gt; &quot;other&quot;) then
+		if FileExists(convertToURL(tFile)) then
+			a = msgbox(&quot;檔案已存在,您要覆蓋檔案嗎?&quot;,1,dialogtitle)
+			if a = 1 then
+				subSaveAs(thisComponent, tFile)
+        		msgbox(&quot;您的檔案&quot; &amp; Chr$(10) &amp; &quot;[&quot; &amp; tFile &amp; &quot;]&quot; &amp; Chr$(10) &amp; &quot;已成功另存成ODF文件格式.&quot;,0,dialogtitle)
+			end if
+		else
+			subSaveAs(thisComponent, tFile)
+        	msgbox(&quot;您的檔案&quot; &amp; Chr$(10) &amp; &quot;[&quot; &amp; tFile &amp; &quot;]&quot; &amp; Chr$(10) &amp; &quot;已成功另存成ODF文件格式.&quot;,0,dialogtitle)
+		end if
+	else
+		if (oFileExt = &quot;odt&quot; or oFileExt = &quot;ods&quot; or oFileExt = &quot;odp&quot;) then
+			msgbox(&quot;您的檔案已經是ODF格式.&quot;,0,dialogtitle)
+		else
+			msgbox(&quot;您的檔案副檔名必須為&quot; &amp; Chr$(10) &amp; &quot;[doc,docx,xls,xlsx,ppt,pptx]&quot;,0,dialogtitle)
+		end if
+	end if
+	
+End Sub
+
+sub subSaveAs(oDoc, sFile, optional sType)
+	sURL = convertToURL(sFile)
+	if isMissing(sType) then
+	   oDoc.storeAsURL(sURL, array())
+	else
+	  dim mFileType(0)
+	  mFileType(0) = createUnoStruct(&quot;com.sun.star.beans.PropertyValue&quot;)
+	  mFileType(0).Name = &quot;FilterName&quot;
+	  mFileType(0).Value = sType
+	  oDoc.storeAsURL(sURL, mFileType())
+	end if
+end sub
+
+
+</script:module>
