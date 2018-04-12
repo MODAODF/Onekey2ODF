@@ -76,7 +76,8 @@ Sub onekey2odf
 	parts = split(oTitle,&quot;.&quot;)
 	&apos;msgbox(&quot;parts = &quot; &amp; parts(0),0,&quot;parts(0)&quot;)
 	Dim tFile 
-	tFile = convertToURL(oPathDir &amp; &quot;/&quot; &amp; parts(0) &amp; oNewFileExt)
+	&apos;tFile = convertToURL(oPathDir &amp; &quot;/&quot; &amp; parts(0) &amp; oNewFileExt)
+    tFile = oPathDir &amp; &quot;/&quot; &amp; parts(0) &amp; oNewFileExt
 	&apos;msgbox(tFile)
 	
 	if (oNewFileExt &lt;&gt; &quot;other&quot;) then
